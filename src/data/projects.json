@@ -12,7 +12,7 @@
     "year": 2026,
     "image": "https://SargisXachatryan.github.io/CV/public/easy-chat/img1",
     "link": "https://sargisx.github.io/Easy-Chat",
-    "video": "https://SargisXachatryan.github.io/CV/public/easy-chat/img1",
+    "video": "https://sargisxachatryan.github.io/CV/resources/1_EasyChat_Video.mp4",
     "gallery": [
       "https://SargisXachatryan.github.io/CV/public/easy-chat/img1",
       "https://SargisXachatryan.github.io/CV/public/easy-chat/img2",
@@ -23,6 +23,27 @@
       "https://SargisXachatryan.github.io/CV/public/easy-chat/img7",
       "https://SargisXachatryan.github.io/CV/public/easy-chat/img8",
       "https://SargisXachatryan.github.io/CV/public/easy-chat/img9"
+    ]
+  },
+  {
+    "id": 2,
+    "title": "",
+    "subtitle": "3D / Animation",
+    "description": "Easy Park is a concept project centered around improving everyday parking frustrations through a simple, user-focused solution. The idea introduces a system that allows drivers to quickly identify and notify vehicle owners when their car is blocking access, using license plate recognition and instant alerts.\\n\\nThe project is presented through a short 3D animated trailer created in Blender, illustrating a real-world scenario where a driver is unable to leave a parking space and resolves the situation using the app. The concept also extends toward future features such as locating available parking spaces and optimizing urban parking flow.",
+    "tags": [
+      "Blender",
+      "Davinci Resolve"
+    ],
+    "year": 2026,
+    "image": "https://sargisXachatryan.github.io/CV/resources/2_EasyPark_Thumbnail.png",
+    "link": "https://sargisxachatryan.github.io/CV/resources/2_EasyPark_Video.mp4",
+    "video": "https://sargisXachatryan.github.io/CV/resources/2_EasyPark_Video.mp4",
+    "gallery": [
+      "https://sargisXachatryan.github.io/CV/resources/2_EasyPark_Img1.png",
+      "https://sargisXachatryan.github.io/CV/resources/2_EasyPark_Img2.png",
+      "https://sargisXachatryan.github.io/CV/resources/2_EasyPark_Img3.png",
+      "https://sargisXachatryan.github.io/CV/resources/2_EasyPark_Img4.png",
+      "https://sargisXachatryan.github.io/CV/resources/2_EasyPark_Img5.png"
     ]
   }
 ]

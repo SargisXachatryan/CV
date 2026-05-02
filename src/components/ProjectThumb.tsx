@@ -11,7 +11,7 @@ interface Props {
 export default function ProjectThumb({ project, isActive, onSelect }: Props) {
   return (
     <Link
-      to={`/portfolio/${project.id}`}
+      to={`/CV/portfolio/${project.id}`}
       className={`thumb ${isActive ? 'active' : ''}`}
       onMouseEnter={() => onSelect(project)}
     >

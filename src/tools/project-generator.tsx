@@ -6,6 +6,7 @@
  */
 
 import { useState, useCallback, useEffect, useRef } from 'react'
+import projectsData from '../data/projects.json'
 import {
   type Tag,
   type Subtitle,
@@ -21,8 +22,8 @@ const MAX_GALLERY = 10
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
-const IMAGE_BASE_URL = 'https://sargisXachatryan.github.io/CV/public/'
-const VIDEO_BASE_URL = 'https://sargisXachatryan.github.io/CV/public/'
+const IMAGE_BASE_URL = 'https://sargisXachatryan.github.io/CV/resources'
+const VIDEO_BASE_URL = 'https://sargisXachatryan.github.io/CV/resources'
 
 const IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'gif'] as const
 
@@ -44,6 +45,9 @@ function useImageProbe(filename: string) {
     let cancelled = false
     let found = false
 
+    // If the path already has a known image extension, try it directly first
+    const hasExt = IMAGE_EXTENSIONS.some(ext => name.toLowerCase().endsWith(`.${ext}`))
+
     const tryNext = (index: number) => {
       if (cancelled || index >= IMAGE_EXTENSIONS.length) {
         if (!found && !cancelled) setStatus('notfound')
@@ -56,7 +60,17 @@ function useImageProbe(filename: string) {
       img.src = url
     }
 
-    tryNext(0)
+    if (hasExt) {
+      // Try the exact URL as-is
+      const url = `${IMAGE_BASE_URL}${name}`
+      const img = new Image()
+      img.onload = () => { if (cancelled) return; found = true; setResolvedUrl(url); setStatus('found') }
+      img.onerror = () => { if (!cancelled) setStatus('notfound') }
+      img.src = url
+    } else {
+      tryNext(0)
+    }
+
     return () => { cancelled = true }
   }, [filename])
 
@@ -134,8 +148,11 @@ function buildJSON(form: FormState, nextId: number): object {
 
 export default function ProjectGenerator() {
   const [form, setForm] = useState<FormState>(DEFAULT_FORM)
-  const [lastId, setLastId] = useState<string>('')
   const [copied, setCopied] = useState(false)
+
+  // Auto-derive next ID directly from the imported JSON — no file picker needed
+  const existingIds = (projectsData as { id: number }[]).map((p) => p.id)
+  const lastId = existingIds.length > 0 ? Math.max(...existingIds) : 0
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -146,7 +163,7 @@ export default function ProjectGenerator() {
       : [...form.tags, tag]
     )
 
-  const nextId = lastId.trim() !== '' ? Number(lastId) + 1 : 1
+  const nextId = lastId + 1
   const jsonOutput = JSON.stringify(buildJSON(form, nextId), null, 2)
 
   const handleCopy = useCallback(() => {
@@ -170,14 +187,15 @@ export default function ProjectGenerator() {
           <form className="gen-form" onSubmit={(e) => e.preventDefault()}>
 
             <div className="gen-row">
-              <Field label="Last ID in projects.json" hint="Next entry will get this + 1">
-                <input
-                  className="gen-input"
-                  type="number" min={0} step={1}
-                  placeholder="e.g. 6"
-                  value={lastId}
-                  onChange={(e) => setLastId(e.target.value)}
-                />
+              {/* Auto ID — read directly from imported projects.json */}
+              <Field label="Next ID" hint="Auto-calculated from projects.json">
+                <div className="gen-id-result">
+                  <span className="gen-id-label">Last</span>
+                  <span className="gen-id-value">{lastId}</span>
+                  <span className="gen-id-arrow">→</span>
+                  <span className="gen-id-label">Next</span>
+                  <span className="gen-id-next">{nextId}</span>
+                </div>
               </Field>
               <Field label="Year" hint="The year of the project">
                 <select
@@ -221,7 +239,7 @@ export default function ProjectGenerator() {
               </div>
             </Field>
 
-            {/* Cover image */}
+            {/* Cover image — file picker */}
             <ImageField
               value={form.image}
               onChange={(val) => set('image', val)}
@@ -235,7 +253,7 @@ export default function ProjectGenerator() {
                 onChange={(e) => set('link', e.target.value)} />
             </Field>
 
-            {/* Video */}
+            {/* Video — file picker (mp4 only) */}
             <VideoField
               value={form.video}
               onChange={(val) => set('video', val)}
@@ -248,7 +266,7 @@ export default function ProjectGenerator() {
             />
 
             <button type="button" className="gen-reset"
-              onClick={() => { setForm(DEFAULT_FORM); setLastId('') }}>
+              onClick={() => { setForm(DEFAULT_FORM) }}>
               Reset form
             </button>
           </form>
@@ -290,13 +308,23 @@ function Field({ label, hint, children }: {
   )
 }
 
-// ─── Cover image field ────────────────────────────────────────────────────────
+// ─── Cover image field — file picker ─────────────────────────────────────────
 
 function ImageField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  const [filename, setFilename] = useState(value)
-  const { resolvedUrl, status } = useImageProbe(filename)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [fileName, setFileName] = useState<string>('')
+  const { resolvedUrl, status } = useImageProbe(value)
 
-  useEffect(() => { onChange(filename) }, [filename])
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Keep full filename including extension
+    const path = `/${file.name}`
+    setFileName(file.name)
+    onChange(path)
+    e.target.value = ''
+  }
 
   const statusLabel: Record<ProbeStatus, string> = {
     idle: '', loading: 'Searching…', found: '✓ Found', notfound: '✗ Not found',
@@ -308,29 +336,49 @@ function ImageField({ value, onChange }: { value: string; onChange: (v: string) 
   return (
     <div className="gen-field">
       <label className="gen-label">
-        Cover image filename
-        <span className="gen-hint">Path after {IMAGE_BASE_URL} — extension auto-detected</span>
+        Cover image
+        <span className="gen-hint">Select the cover image file — full filename including extension is used</span>
       </label>
-      <div className="gen-img-row">
-        <input className="gen-input" type="text"
-          placeholder="e.g. /easy-chat/cover"
-          value={filename}
-          onChange={(e) => setFilename(e.target.value)} />
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: 'none' }}
+        onChange={handleFile}
+      />
+
+      <div className="gen-file-row">
+        <button
+          type="button"
+          className="gen-file-pick-btn"
+          onClick={() => fileInputRef.current?.click()}
+        >
+          <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+            <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm0 2h12v10H4V5zm2 5l2-2 2 2 2-3 3 4H4l2-1z"/>
+          </svg>
+          {fileName ? 'Change image' : 'Select image'}
+        </button>
+
+        {fileName && (
+          <span className="gen-file-name">{fileName}</span>
+        )}
+
         {status !== 'idle' && (
           <span className={`gen-img-status ${statusClass[status]}`}>{statusLabel[status]}</span>
         )}
       </div>
+
       <div className={`gen-img-preview-box ${status === 'found' ? 'visible' : ''}`}>
         {status === 'found' && (
           <>
             <img src={resolvedUrl} className="gen-img-preview" alt="preview" />
-            <span className="gen-img-url">{IMAGE_BASE_URL}{filename}</span>
+            <span className="gen-img-url">{IMAGE_BASE_URL}{value}</span>
           </>
         )}
-        {status === 'notfound' && filename.trim() && (
+        {status === 'notfound' && value.trim() && (
           <span className="gen-img-notfound">
-            No image found for "{filename.trim()}"<br />
-            Tried: {IMAGE_EXTENSIONS.map(e => `${filename}.${e}`).join(', ')}
+            No image found at "{IMAGE_BASE_URL}{value.trim()}"
           </span>
         )}
       </div>
@@ -338,10 +386,22 @@ function ImageField({ value, onChange }: { value: string; onChange: (v: string) 
   )
 }
 
-// ─── Video field ──────────────────────────────────────────────────────────────
+// ─── Video field — file picker (MP4 only) ────────────────────────────────────
 
 function VideoField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [fileName, setFileName] = useState<string>('')
   const { status, resolvedUrl } = useVideoProbe(value)
+
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const path = `/${file.name}`
+    setFileName(file.name)
+    onChange(path)
+    e.target.value = ''
+  }
 
   const statusLabel: Record<VideoProbeStatus, string> = {
     idle: '', loading: 'Checking…', found: '✓ Found', notfound: '✗ Not found',
@@ -353,22 +413,53 @@ function VideoField({ value, onChange }: { value: string; onChange: (v: string) 
   return (
     <div className="gen-field">
       <label className="gen-label">
-        Video path
-        <span className="gen-hint">Optional — path after {VIDEO_BASE_URL} (e.g. /easy-chat/demo.mp4) or leave blank</span>
+        Video
+        <span className="gen-hint">Optional — select an .mp4 file. Path resolved from {VIDEO_BASE_URL}</span>
       </label>
-      <div className="gen-img-row">
-        <input className="gen-input" type="text"
-          placeholder="e.g. /easy-chat/demo.mp4"
-          value={value}
-          onChange={(e) => onChange(e.target.value)} />
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".mp4,video/mp4"
+        style={{ display: 'none' }}
+        onChange={handleFile}
+      />
+
+      <div className="gen-file-row">
+        <button
+          type="button"
+          className="gen-file-pick-btn"
+          onClick={() => fileInputRef.current?.click()}
+        >
+          <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+            <path d="M2 6a2 2 0 012-2h6l2 2h4a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6zm11 3l-4-2v6l4-2V9z"/>
+          </svg>
+          {fileName ? 'Change video' : 'Select .mp4'}
+        </button>
+
+        {fileName && (
+          <span className="gen-file-name">{fileName}</span>
+        )}
+
         {status !== 'idle' && (
           <span className={`gen-img-status ${statusClass[status]}`}>{statusLabel[status]}</span>
         )}
       </div>
+
       {status === 'found' && (
         <div className="gen-img-preview-box visible">
           <span className="gen-img-url">{resolvedUrl}</span>
         </div>
+      )}
+
+      {fileName && value && (
+        <button
+          type="button"
+          className="gen-file-clear"
+          onClick={() => { setFileName(''); onChange('') }}
+        >
+          × Remove video
+        </button>
       )}
     </div>
   )
@@ -389,16 +480,9 @@ function GalleryField({
     const files = Array.from(e.target.files ?? [])
     if (files.length === 0) return
 
-    // Build paths: keep original filename with extension
-    const newPaths = files.map((f) => {
-      // Strip extension — we store just the path, extension is part of filename here
-      return `/${f.name}`
-    })
-
+    const newPaths = files.map((f) => `/${f.name}`)
     const merged = [...items, ...newPaths].slice(0, MAX_GALLERY)
     onChange(merged)
-
-    // Reset input so the same files can be re-selected if needed
     e.target.value = ''
   }
 
@@ -417,7 +501,6 @@ function GalleryField({
         </span>
       </label>
 
-      {/* Hidden file input — multi-select */}
       <input
         ref={fileInputRef}
         type="file"
@@ -427,7 +510,6 @@ function GalleryField({
         onChange={handleFilePick}
       />
 
-      {/* Pick button */}
       <button
         type="button"
         className="gen-gallery-pick-btn"
@@ -439,14 +521,12 @@ function GalleryField({
           : `+ Add images (${remaining} remaining)`}
       </button>
 
-      {/* List of selected gallery items */}
       {items.length > 0 && (
         <ul className="gen-gallery-list">
           {items.map((path, i) => {
             const previewUrl = `${IMAGE_BASE_URL}${path}`
             return (
               <li key={i} className="gen-gallery-item">
-                {/* Hoverable filename — tooltip preview */}
                 <span className="gen-gallery-name" data-preview={previewUrl}>
                   {path}
                   <span className="gen-gallery-tooltip">
@@ -635,10 +715,114 @@ const CSS = `
   .gen-tag-btn:hover { color: var(--heading); border-color: rgba(255,255,255,0.2); }
   .gen-tag-btn.selected { background: var(--accent); border-color: var(--accent); color: var(--bg); }
 
-  /* Image / status shared */
-  .gen-img-row { display: flex; align-items: center; gap: 12px; }
-  .gen-img-row .gen-input { flex: 1; }
+  /* ── Generic file picker button ── */
+  .gen-file-pick-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    padding: 9px 18px;
+    border-radius: var(--radius);
+    border: 1px dashed var(--border);
+    background: rgba(255,255,255,0.02);
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s;
+    align-self: flex-start;
+  }
+  .gen-file-pick-btn:hover {
+    border-color: var(--accent-border, rgba(212,168,67,0.35));
+    color: var(--accent);
+    background: var(--accent-dim);
+  }
 
+  /* Row for picker button + filename + status */
+  .gen-file-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  /* Filename shown after file is picked */
+  .gen-file-name {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--heading);
+    letter-spacing: 0.04em;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 12px;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Error message for JSON parsing */
+  .gen-file-error {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: #fca5a5;
+    letter-spacing: 0.04em;
+  }
+
+  /* Inline clear link for video */
+  .gen-file-clear {
+    align-self: flex-start;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    letter-spacing: 0.04em;
+    transition: color 0.15s;
+  }
+  .gen-file-clear:hover { color: #fca5a5; }
+
+  /* ID result pill row */
+  .gen-id-result {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 7px 14px;
+    align-self: flex-start;
+  }
+  .gen-id-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .gen-id-value {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--text);
+  }
+  .gen-id-arrow {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-dim);
+    margin: 0 2px;
+  }
+  .gen-id-next {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--accent);
+  }
+
+  /* Image / status shared */
   .gen-img-status {
     font-family: var(--font-mono);
     font-size: 11px;
@@ -726,7 +910,6 @@ const CSS = `
   }
   .gen-gallery-item:hover { border-color: rgba(255,255,255,0.14); }
 
-  /* Filename span with hover tooltip preview */
   .gen-gallery-name {
     position: relative;
     font-family: var(--font-mono);
@@ -741,7 +924,6 @@ const CSS = `
   }
   .gen-gallery-name:hover { color: var(--heading); }
 
-  /* Tooltip image that appears above on hover */
   .gen-gallery-tooltip {
     position: absolute;
     bottom: calc(100% + 8px);
@@ -768,7 +950,6 @@ const CSS = `
     background: var(--surface2);
   }
 
-  /* Remove button */
   .gen-gallery-remove {
     flex-shrink: 0;
     width: 20px; height: 20px;

@@ -14,6 +14,7 @@ export type Tag =
   | 'Firebase'
   | 'Unity'
   | 'Blender'
+  | 'Davinci Resolve'
   | 'Node.js'
   | 'REST API'
 
@@ -58,7 +59,7 @@ export interface FormState {
 export const ALL_TAGS: Tag[] = [
   'React', 'Next.js', 'JavaScript', 'TypeScript', 'HTML/CSS',
   'Python', 'C#', 'SQL', 'MongoDB', 'PostgreSQL', 'Firebase',
-  'Unity', 'Blender', 'Node.js', 'REST API',
+  'Unity', 'Blender','Davinci Resolve', 'Node.js', 'REST API',
 ]
 
 export const ALL_SUBTITLES: Subtitle[] = [
