@@ -540,9 +540,6 @@ export default function ProjectPage() {
         {/* ── Description — full text, paragraphs ── */}
         <section className="pp-desc-section">
           <div className="pp-desc-body">
-            {project.description.split('\n\n').map((para, i) => (
-              <p key={i}>{para}</p>
-            ))}
           </div>
         </section>
 

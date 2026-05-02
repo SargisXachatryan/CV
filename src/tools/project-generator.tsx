@@ -18,7 +18,7 @@ import {
 
 const CURRENT_YEAR = new Date().getFullYear()
 const YEARS = Array.from({ length: 10 }, (_, i) => CURRENT_YEAR - i)
-const MAX_GALLERY = 10
+const MAX_GALLERY = 9
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
