@@ -1,0 +1,28 @@
+[
+  {
+    "id": 1,
+    "title": "Easy Chat",
+    "subtitle": "Web App",
+    "description": "Easy Chat is a web messenger built for people who want to talk to each other without installing yet another app that slowly consumes their phone storage like a digital parasite. It runs directly in the browser, which means it works on most devices as long as they can handle basic internet usage and the emotional weight of unread messages.",
+    "tags": [
+      "React",
+      "JavaScript",
+      "HTML/CSS"
+    ],
+    "year": 2026,
+    "image": "https://SargisXachatryan.github.io/CV/public/easy-chat/img1",
+    "link": "https://sargisx.github.io/Easy-Chat",
+    "video": "https://SargisXachatryan.github.io/CV/public/easy-chat/img1",
+    "gallery": [
+      "https://SargisXachatryan.github.io/CV/public/easy-chat/img1",
+      "https://SargisXachatryan.github.io/CV/public/easy-chat/img2",
+      "https://SargisXachatryan.github.io/CV/public/easy-chat/img3",
+      "https://SargisXachatryan.github.io/CV/public/easy-chat/img4",
+      "https://SargisXachatryan.github.io/CV/public/easy-chat/img5",
+      "https://SargisXachatryan.github.io/CV/public/easy-chat/img6",
+      "https://SargisXachatryan.github.io/CV/public/easy-chat/img7",
+      "https://SargisXachatryan.github.io/CV/public/easy-chat/img8",
+      "https://SargisXachatryan.github.io/CV/public/easy-chat/img9"
+    ]
+  }
+]

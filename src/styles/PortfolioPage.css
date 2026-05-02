@@ -1,0 +1,32 @@
+.portfolio-page {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  /* Full width — no container constraint */
+  width: 100%;
+  overflow: hidden;
+}
+
+.gallery-lower {
+  padding: 28px 40px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.thumbnails {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.no-results {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-dim);
+  padding: 24px 0;
+}
+
+@media (max-width: 640px) {
+  .gallery-lower { padding: 20px 16px 40px; }
+}
