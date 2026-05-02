@@ -6,13 +6,14 @@ import ProjectPage from './pages/ProjectPage'
 import '../src/styles/global.css'
 
 export default function App() {
+  const base = "/CV/"
   return (
     <BrowserRouter>
       <Navbar />
       <Routes>
-        <Route path="/" element={<CVPage />} />
-        <Route path="/portfolio" element={<PortfolioPage />} />
-        <Route path="/portfolio/:id" element={<ProjectPage />} />
+        <Route path={base} element={<CVPage />} />
+        <Route path={base + "portfolio"} element={<PortfolioPage />} />
+        <Route path={base + "portfolio/:id"} element={<ProjectPage />} />
       </Routes>
     </BrowserRouter>
   )
