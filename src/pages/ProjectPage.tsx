@@ -394,7 +394,7 @@ export default function ProjectPage() {
       {/* ── Page content ── */}
       <div className="pp-content">
 
-        <Link to="/portfolio" className="pp-back">
+        <Link to="/CV/portfolio" className="pp-back">
           <span className="pp-back-arrow">←</span> All projects
         </Link>
 
