@@ -4,10 +4,11 @@ import '../styles/Navbar.css'
 
 export default function Navbar() {
   const [open, setOpen] = useState(false)
+  const base = "/CV/"
 
   return (
     <header className="navbar">
-      <NavLink to="/" className="navbar-logo">
+      <NavLink to={base} className="navbar-logo">
         Sargis Khachatryan
       </NavLink>
 
@@ -20,8 +21,8 @@ export default function Navbar() {
       </button>
 
       <nav className={`navbar-links ${open ? 'open' : ''}`}>
-        <NavLink to="/" onClick={() => setOpen(false)}>CV</NavLink>
-        <NavLink to="/portfolio" onClick={() => setOpen(false)}>Portfolio</NavLink>
+        <NavLink to={base} onClick={() => setOpen(false)}>CV</NavLink>
+        <NavLink to={base + "portfolio"} onClick={() => setOpen(false)}>Portfolio</NavLink>
         <a href="mailto:you@example.com" className="navbar-cta" onClick={() => setOpen(false)}>
           Contact
         </a>
