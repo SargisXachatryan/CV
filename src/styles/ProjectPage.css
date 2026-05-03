@@ -455,17 +455,14 @@
   pointer-events: none;
 }
 
-/* Strip is a flex row that starts from the left — items don't stretch */
+/* Strip — space-between distributes real thumbs + ghost placeholders evenly */
 .pp-strip {
   display: flex;
   padding-top: 10px;
   gap: 8px;
-  /* Do NOT use flex:1 — items stay fixed width and left-align naturally */
   flex: 1;
-  /* take available space so the row fills the gap between buttons */
   min-width: 0;
   overflow: hidden;
-  /* items stay left-aligned and never grow to fill remaining space */
   justify-content: space-between;
   align-items: flex-start;
 }
@@ -492,6 +489,19 @@
 
 .pp-strip-thumb.active {
   border-color: var(--accent);
+}
+
+/* Ghost placeholder — same size as a real thumb, completely invisible */
+.pp-strip-ghost {
+  flex: 0 0 112px;
+  width: 112px;
+  height: 63px;
+  border-radius: 4px;
+  background: transparent;
+  border: none;
+  pointer-events: none;
+  cursor: default;
+  padding: 0;
 }
 
 /* Video thumbnails dim slightly to signal interactivity */
@@ -717,6 +727,12 @@
   }
 
   .pp-strip-thumb {
+    flex: 0 0 88px;
+    width: 88px;
+    height: 50px;
+  }
+
+  .pp-strip-ghost {
     flex: 0 0 88px;
     width: 88px;
     height: 50px;

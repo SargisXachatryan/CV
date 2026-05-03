@@ -577,6 +577,10 @@ export default function ProjectPage() {
                       </button>
                     )
                   })}
+                  {/* Ghost placeholders — fill remaining slots so space-between stays stable */}
+                  {Array.from({ length: STRIP_PAGE_SIZE - visibleMedia.length }).map((_, i) => (
+                    <div key={`ghost-${i}`} className="pp-strip-thumb pp-strip-ghost" aria-hidden="true" />
+                  ))}
                 </div>
 
                 {/* Next page button */}
