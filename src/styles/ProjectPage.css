@@ -427,6 +427,7 @@
 }
 
 .pp-strip-page-btn {
+  margin-top: 10px;
   flex-shrink: 0;
   width: 32px;
   height: 63px;
@@ -457,6 +458,7 @@
 /* Strip is a flex row that starts from the left — items don't stretch */
 .pp-strip {
   display: flex;
+  padding-top: 10px;
   gap: 8px;
   /* Do NOT use flex:1 — items stay fixed width and left-align naturally */
   flex: 1;
