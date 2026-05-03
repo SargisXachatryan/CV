@@ -4,7 +4,6 @@
     "title": "Easy Chat",
     "subtitle": "Full Stack",
     "description": "Easy Chat is a web messenger built for people who want to talk to each other without installing yet another app that slowly consumes their phone storage like a digital parasite. It runs directly in the browser, which means it works on most devices as long as they can handle basic internet usage and the emotional weight of unread messages.",
-    "details": "Easy Chat was built from scratch as a full-stack project to explore real-time communication on the web. The goal was simple: a clean, fast messenger that requires zero installation and works across all modern browsers.\n\nThe frontend is built with React and TypeScript, using a component-driven architecture to keep the UI modular and maintainable. State is managed locally with React hooks, keeping things lightweight without needing a heavy state library.\n\nOn the backend, Node.js powers a WebSocket server that handles real-time message delivery with near-zero latency. User sessions and chat history are persisted in a SQL database, giving users access to their conversation history across devices.\n\nThe biggest challenge was handling connection drops gracefully — the app automatically attempts reconnection with exponential backoff, so brief network hiccups don't interrupt conversations. Message delivery confirmation (read receipts) was also a fun problem to solve at the protocol level.\n\nOverall the project was a deep dive into WebSocket architecture, real-time state synchronization, and building a full authentication flow with JWTs from the ground up.",
     "tags": [
       "React",
       "JavaScript",
@@ -14,15 +13,16 @@
     ],
     "year": 2026,
     "image": "https://sargisXachatryan.github.io/CV/resources/1_EasyChat_Thumbnail.jpg",
+    "details": "Easy Chat was built from scratch as a full-stack project to explore real-time communication on the web. The goal was simple: a clean, fast messenger that requires zero installation and works across all modern browsers.\n\nThe frontend is built with React and TypeScript, using a component-driven architecture to keep the UI modular and maintainable. State is managed locally with React hooks, keeping things lightweight without needing a heavy state library.\n\nOn the backend, Node.js powers a WebSocket server that handles real-time message delivery with near-zero latency. User sessions and chat history are persisted in a SQL database, giving users access to their conversation history across devices.\n\nThe biggest challenge was handling connection drops gracefully — the app automatically attempts reconnection with exponential backoff, so brief network hiccups don't interrupt conversations. Message delivery confirmation (read receipts) was also a fun problem to solve at the protocol level.\n\nOverall the project was a deep dive into WebSocket architecture, real-time state synchronization, and building a full authentication flow with JWTs from the ground up.",
     "link": "https://sargisx.github.io/Easy-Chat",
     "video": "https://sargisXachatryan.github.io/CV/resources/1_EasyChat_Video.mp4",
     "gallery": [
-      "https://sargisXachatryan.github.io/CV/resources/1_EasyChat_Img1.png",
-      "https://sargisXachatryan.github.io/CV/resources/1_EasyChat_Img2.png",
-      "https://sargisXachatryan.github.io/CV/resources/1_EasyChat_Img3.png",
-      "https://sargisXachatryan.github.io/CV/resources/1_EasyChat_Img4.png",
-      "https://sargisXachatryan.github.io/CV/resources/1_EasyChat_Img5.png",
-      "https://sargisXachatryan.github.io/CV/resources/1_EasyChat_Img6.png"
+      "https://sargisXachatryan.github.io/CV/resources/1_EasyChat_Img1.jpg",
+      "https://sargisXachatryan.github.io/CV/resources/1_EasyChat_Img2.jpg",
+      "https://sargisXachatryan.github.io/CV/resources/1_EasyChat_Img3.jpg",
+      "https://sargisXachatryan.github.io/CV/resources/1_EasyChat_Img4.jpg",
+      "https://sargisXachatryan.github.io/CV/resources/1_EasyChat_Img5.jpg",
+      "https://sargisXachatryan.github.io/CV/resources/1_EasyChat_Img6.jpg"
     ]
   },
   {
@@ -30,21 +30,43 @@
     "title": "Easy Park",
     "subtitle": "3D / Animation",
     "description": "Easy Park is a concept project centered around improving everyday parking frustrations through a simple, user-focused solution. The idea introduces a system that allows drivers to quickly identify and notify vehicle owners when their car is blocking access, using license plate recognition and instant alerts.",
-    "details": "Easy Park started as a response to a genuinely frustrating daily experience — being blocked in a parking space with no way to reach the other driver. The concept was simple: scan a license plate, the system finds the owner, and a push notification reaches them instantly.\n\nThe project is presented as a short 3D animated trailer created entirely in Blender. The animation walks through a real-world scenario — a driver trapped behind a blocking car, opening the app, scanning the plate, and watching the offending car move within minutes. Every scene was modeled, rigged, and animated manually.\n\nThe editing and color grading were done in DaVinci Resolve, where the final cut was assembled with motion graphics, sound design, and a cinematic grade to give the concept a polished, professional feel.\n\nBeyond the trailer, the concept was also fleshed out into a broader product vision: a city-wide parking availability map, integration with municipal parking systems, and an AI layer that predicts parking congestion by time of day and location.\n\nThis project was primarily an exercise in 3D storytelling and product concept visualization — translating an abstract app idea into something tangible and compelling through motion.",
     "tags": [
       "Blender",
       "Davinci Resolve"
     ],
     "year": 2025,
-    "image": "https://sargisXachatryan.github.io/CV/resources/2_EasyPark_Thumbnail.png",
+    "image": "https://sargisXachatryan.github.io/CV/resources/2_EasyPark_Thumbnail.jpg",
+    "details": "Easy Park started as a response to a genuinely frustrating daily experience — being blocked in a parking space with no way to reach the other driver. The concept was simple: scan a license plate, the system finds the owner, and a push notification reaches them instantly.\n\nThe project is presented as a short 3D animated trailer created entirely in Blender. The animation walks through a real-world scenario — a driver trapped behind a blocking car, opening the app, scanning the plate, and watching the offending car move within minutes. Every scene was modeled, rigged, and animated manually.\n\nThe editing and color grading were done in DaVinci Resolve, where the final cut was assembled with motion graphics, sound design, and a cinematic grade to give the concept a polished, professional feel.\n\nBeyond the trailer, the concept was also fleshed out into a broader product vision: a city-wide parking availability map, integration with municipal parking systems, and an AI layer that predicts parking congestion by time of day and location.\n\nThis project was primarily an exercise in 3D storytelling and product concept visualization — translating an abstract app idea into something tangible and compelling through motion.",
     "link": "https://sargisxachatryan.github.io/CV/resources/2_EasyPark_Video.mp4",
     "video": "https://sargisXachatryan.github.io/CV/resources/2_EasyPark_Video.mp4",
     "gallery": [
-      "https://sargisXachatryan.github.io/CV/resources/2_EasyPark_Img1.png",
-      "https://sargisXachatryan.github.io/CV/resources/2_EasyPark_Img2.png",
-      "https://sargisXachatryan.github.io/CV/resources/2_EasyPark_Img3.png",
-      "https://sargisXachatryan.github.io/CV/resources/2_EasyPark_Img4.png",
-      "https://sargisXachatryan.github.io/CV/resources/2_EasyPark_Img5.png"
+      "https://sargisXachatryan.github.io/CV/resources/2_EasyPark_Img1.jpg",
+      "https://sargisXachatryan.github.io/CV/resources/2_EasyPark_Img2.jpg",
+      "https://sargisXachatryan.github.io/CV/resources/2_EasyPark_Img3.jpg",
+      "https://sargisXachatryan.github.io/CV/resources/2_EasyPark_Img4.jpg",
+      "https://sargisXachatryan.github.io/CV/resources/2_EasyPark_Img5.jpg"
+    ]
+  },
+  {
+    "id": 3,
+    "title": "HK416",
+    "subtitle": "3D / Animation",
+    "description": "A detailed 3D model of a modern assault rifle inspired by the HK416 platform, created as a high-fidelity digital asset for visualization and animation purposes. It includes multiple visualization variants such as solid, textured, UV-mapped, and topology-focused versions, making it suitable for both rendering and study of structure and form.",
+    "tags": [
+      "Blender"
+    ],
+    "year": 2026,
+    "image": "https://sargisXachatryan.github.io/CV/resources/3_HK416_Thumbnail.jpg",
+    "details": "The model was created in Blender and consists of 40,991 triangles. It includes a fully rigged bone system designed to simulate realistic firearm mechanics, allowing for full animation of components such as the trigger and other movable parts. The asset was built with clean topology and UV mapping to support different rendering workflows, including textured and non-textured (solid) visual modes. It is optimized for animation, with a fully controllable rig that allows realistic motion simulation of firearm operation within 3D environments.",
+    "gallery": [
+      "https://sargisXachatryan.github.io/CV/resources/3_HK416_Img1.jpg",
+      "https://sargisXachatryan.github.io/CV/resources/3_HK416_Img2.jpg",
+      "https://sargisXachatryan.github.io/CV/resources/3_HK416_Img3.jpg",
+      "https://sargisXachatryan.github.io/CV/resources/3_HK416_Img4.jpg",
+      "https://sargisXachatryan.github.io/CV/resources/3_HK416_Img5.jpg",
+      "https://sargisXachatryan.github.io/CV/resources/3_HK416_Img6.jpg",
+      "https://sargisXachatryan.github.io/CV/resources/3_HK416_Img7.jpg",
+      "https://sargisXachatryan.github.io/CV/resources/3_HK416_Img8.jpg"
     ]
   }
 ]
