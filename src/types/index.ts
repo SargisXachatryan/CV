@@ -2,27 +2,30 @@
 
 export type Tag =
   | 'React'
+  | 'React Native'
   | 'Next.js'
   | 'HTML/CSS'
   | 'JavaScript'
   | 'TypeScript'
   | 'Python'
-  | 'C#'
+  | 'PySide6'
   | 'SQL'
   | 'MongoDB'
-  | 'Unity'
-  | 'Blender'
-  | 'Davinci Resolve'
   | 'Node.js'
   | 'REST API'
+  | 'Unity'
+  | 'C#'
+  | 'Blender'
+  | 'Davinci Resolve'
 
 export type Subtitle =
   | 'Web App'
   | 'Mobile App'
+  | 'PC App'
   | 'Game'
   | '3D / Animation'
   | 'Backend / API'
-  | 'Full Stack'
+  | 'Full Stack Web App'
   | 'Tool / Script'
   | 'UI Design'
   | 'Other'
@@ -59,14 +62,14 @@ export interface FormState {
 }
 
 export const ALL_TAGS: Tag[] = [
-  'React', 'Next.js', 'JavaScript', 'TypeScript', 'HTML/CSS',
-  'Python', 'C#', 'SQL', 'MongoDB','Unity', 'Blender',
+  'React', 'React Native', 'Next.js', 'JavaScript', 'TypeScript', 'HTML/CSS',
+  'Python', 'PySide6', 'C#', 'SQL', 'MongoDB', 'Unity', 'Blender',
   'Davinci Resolve', 'Node.js', 'REST API',
 ]
 
 export const ALL_SUBTITLES: Subtitle[] = [
-  'Web App', 'Mobile App', 'Game', '3D / Animation',
-  'Backend / API', 'Full Stack', 'Tool / Script', 'UI Design', 'Other',
+  'Web App', 'Mobile App', 'PC App', 'Game', '3D / Animation',
+  'Backend / API', 'Full Stack Web App', 'Tool / Script', 'UI Design', 'Other',
 ]
 
 export const DEFAULT_FORM: FormState = {
