@@ -2,7 +2,7 @@
   {
     "id": 1,
     "title": "Easy Chat",
-    "subtitle": "Full Stack",
+    "subtitle": "Full Stack Web App",
     "description": "Easy Chat is a web messenger built for people who want to talk to each other without installing yet another app that slowly consumes their phone storage like a digital parasite. It runs directly in the browser, which means it works on most devices as long as they can handle basic internet usage and the emotional weight of unread messages.",
     "tags": [
       "React",
