@@ -1,14 +1,33 @@
 import { useState } from 'react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import '../styles/Navbar.css'
 
 export default function Navbar() {
   const [open, setOpen] = useState(false)
   const base = "/CV/"
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  const handleContact = () => {
+    setOpen(false)
+    const isPortfolio = location.pathname.startsWith('/CV/portfolio')
+
+    if (isPortfolio) {
+      // Already on portfolio page — just scroll
+      document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })
+    } else {
+      // Navigate to portfolio then scroll after render
+      navigate('/CV/portfolio')
+      setTimeout(() => {
+        document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })
+      }, 300)
+    }
+  }
 
   return (
     <header className="navbar">
-      <NavLink to={base} className="navbar-logo">
+      {/* end=true means only active when path is exactly /CV/ */}
+      <NavLink to={base} end className="navbar-logo">
         Sargis Khachatryan
       </NavLink>
 
@@ -21,11 +40,12 @@ export default function Navbar() {
       </button>
 
       <nav className={`navbar-links ${open ? 'open' : ''}`}>
-        <NavLink to={base} onClick={() => setOpen(false)}>CV</NavLink>
+        {/* end=true: only active on exact /CV/ — not on /CV/portfolio */}
+        <NavLink to={base} end onClick={() => setOpen(false)}>CV</NavLink>
         <NavLink to={base + "portfolio"} onClick={() => setOpen(false)}>Portfolio</NavLink>
-        <a href="mailto:you@example.com" className="navbar-cta" onClick={() => setOpen(false)}>
+        <button className="navbar-cta" onClick={handleContact}>
           Contact
-        </a>
+        </button>
       </nav>
     </header>
   )

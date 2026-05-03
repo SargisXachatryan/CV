@@ -136,8 +136,9 @@ function buildJSON(form: FormState, nextId: number): object {
     year: form.year,
     image: form.image ? `${IMAGE_BASE_URL}${form.image}` : '',
   }
-  if (form.link.trim())  obj.link  = form.link.trim()
-  if (form.video.trim()) obj.video = `${VIDEO_BASE_URL}${form.video.trim()}`
+  if (form.details.trim()) obj.details = form.details.trim()
+  if (form.link.trim())    obj.link    = form.link.trim()
+  if (form.video.trim())   obj.video   = `${VIDEO_BASE_URL}${form.video.trim()}`
   if (form.gallery.length > 0) {
     obj.gallery = form.gallery.map((g) => `${IMAGE_BASE_URL}${g}`)
   }
@@ -149,6 +150,10 @@ function buildJSON(form: FormState, nextId: number): object {
 export default function ProjectGenerator() {
   const [form, setForm] = useState<FormState>(DEFAULT_FORM)
   const [copied, setCopied] = useState(false)
+  const [importText, setImportText] = useState('')
+  const [importError, setImportError] = useState('')
+  const [importSuccess, setImportSuccess] = useState(false)
+  const [importedId, setImportedId] = useState<number | null>(null)
 
   // Auto-derive next ID directly from the imported JSON — no file picker needed
   const existingIds = (projectsData as { id: number }[]).map((p) => p.id)
@@ -163,8 +168,45 @@ export default function ProjectGenerator() {
       : [...form.tags, tag]
     )
 
-  const nextId = lastId + 1
-  const jsonOutput = JSON.stringify(buildJSON(form, nextId), null, 2)
+  const handleImport = useCallback(() => {
+    setImportError('')
+    setImportSuccess(false)
+    try {
+      const raw = importText.trim()
+      if (!raw) { setImportError('Paste a JSON object first.'); return }
+      const obj = JSON.parse(raw)
+      // Strip the base URL prefix from image/video/gallery to get the relative path
+      const stripBase = (url: string, base: string) =>
+        url.startsWith(base) ? url.slice(base.length) : url
+
+      const newForm: FormState = {
+        title:       obj.title       ?? '',
+        subtitle:    obj.subtitle    ?? 'Web App',
+        description: obj.description ?? '',
+        details:     obj.details     ?? '',
+        tags:        Array.isArray(obj.tags) ? obj.tags : [],
+        year:        obj.year        ?? new Date().getFullYear(),
+        image:       obj.image       ? stripBase(obj.image, IMAGE_BASE_URL) : '',
+        link:        obj.link        ?? '',
+        video:       obj.video       ? stripBase(obj.video, VIDEO_BASE_URL) : '',
+        gallery:     Array.isArray(obj.gallery)
+                       ? obj.gallery.map((g: string) => stripBase(g, IMAGE_BASE_URL))
+                       : [],
+      }
+      setForm(newForm)
+      // Preserve the imported ID if present, otherwise fall back to auto
+      setImportedId(typeof obj.id === 'number' ? obj.id : null)
+      setImportText('')
+      setImportSuccess(true)
+      setTimeout(() => setImportSuccess(false), 2500)
+    } catch {
+      setImportError('Invalid JSON — check your syntax and try again.')
+    }
+  }, [importText])
+
+  // Use imported ID when editing an existing entry, otherwise auto-increment
+  const activeId = importedId ?? (lastId + 1)
+  const jsonOutput = JSON.stringify(buildJSON(form, activeId), null, 2)
 
   const handleCopy = useCallback(() => {
     navigator.clipboard.writeText(jsonOutput).then(() => {
@@ -188,13 +230,23 @@ export default function ProjectGenerator() {
 
             <div className="gen-row">
               {/* Auto ID — read directly from imported projects.json */}
-              <Field label="Next ID" hint="Auto-calculated from projects.json">
+              <Field label={importedId !== null ? "Editing ID" : "Next ID"} hint={importedId !== null ? "Loaded from imported JSON" : "Auto-calculated from projects.json"}>
                 <div className="gen-id-result">
-                  <span className="gen-id-label">Last</span>
-                  <span className="gen-id-value">{lastId}</span>
-                  <span className="gen-id-arrow">→</span>
-                  <span className="gen-id-label">Next</span>
-                  <span className="gen-id-next">{nextId}</span>
+                  {importedId !== null ? (
+                    <>
+                      <span className="gen-id-label">ID</span>
+                      <span className="gen-id-next">{importedId}</span>
+                      <span className="gen-id-label" style={{marginLeft:'6px', opacity:0.5}}>(imported)</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="gen-id-label">Last</span>
+                      <span className="gen-id-value">{lastId}</span>
+                      <span className="gen-id-arrow">→</span>
+                      <span className="gen-id-label">Next</span>
+                      <span className="gen-id-next">{lastId + 1}</span>
+                    </>
+                  )}
                 </div>
               </Field>
               <Field label="Year" hint="The year of the project">
@@ -220,11 +272,18 @@ export default function ProjectGenerator() {
               </select>
             </Field>
 
-            <Field label="Description" hint="Full project description">
+            <Field label="Description" hint="Short project description shown in the sidebar">
               <textarea className="gen-textarea" rows={4}
                 placeholder="Describe the project, its goals, and what you built…"
                 value={form.description}
                 onChange={(e) => set('description', e.target.value)} />
+            </Field>
+
+            <Field label="Details" hint="Optional — long-form write-up shown in 'About the project'. Use double newlines (Enter × 2) to separate paragraphs.">
+              <textarea className="gen-textarea" rows={7}
+                placeholder="Full project write-up — what you built, how, challenges you solved, technical decisions…&#10;&#10;Use a blank line to start a new paragraph."
+                value={form.details}
+                onChange={(e) => set('details', e.target.value)} />
             </Field>
 
             <Field label="Tags" hint="Select one or more">
@@ -266,25 +325,56 @@ export default function ProjectGenerator() {
             />
 
             <button type="button" className="gen-reset"
-              onClick={() => { setForm(DEFAULT_FORM) }}>
+              onClick={() => { setForm(DEFAULT_FORM); setImportedId(null) }}>
               Reset form
             </button>
           </form>
 
-          {/* ── RIGHT: JSON OUTPUT ── */}
-          <div className="gen-output-col">
-            <div className="gen-output-header">
-              <span className="gen-output-label">JSON Output</span>
-              <button type="button"
-                className={`gen-copy-btn ${copied ? 'copied' : ''}`}
-                onClick={handleCopy}>
-                {copied ? '✓ Copied!' : 'Copy JSON'}
-              </button>
+          {/* ── RIGHT: JSON IMPORT + OUTPUT ── */}
+          <div className="gen-right-col">
+
+            {/* JSON Import */}
+            <div className="gen-output-col">
+              <div className="gen-output-header">
+                <span className="gen-output-label">JSON Import</span>
+                <button
+                  type="button"
+                  className={`gen-copy-btn ${importSuccess ? 'copied' : ''}`}
+                  onClick={handleImport}
+                >
+                  {importSuccess ? '✓ Imported!' : 'Load into form'}
+                </button>
+              </div>
+              <div className="gen-output-box gen-import-box">
+                <textarea
+                  className="gen-import-textarea"
+                  placeholder={'Paste a project JSON object here…\n\nClick "Load into form" to fill all fields automatically.\nThe form will be cleared and replaced with the pasted data.'}
+                  value={importText}
+                  onChange={(e) => { setImportText(e.target.value); setImportError('') }}
+                  spellCheck={false}
+                />
+                {importError && (
+                  <p className="gen-import-error">{importError}</p>
+                )}
+              </div>
             </div>
-            <div className="gen-output-box">
-              <pre className="gen-json"
-                dangerouslySetInnerHTML={{ __html: highlight(jsonOutput) }} />
+
+            {/* JSON Output */}
+            <div className="gen-output-col">
+              <div className="gen-output-header">
+                <span className="gen-output-label">JSON Output</span>
+                <button type="button"
+                  className={`gen-copy-btn ${copied ? 'copied' : ''}`}
+                  onClick={handleCopy}>
+                  {copied ? '✓ Copied!' : 'Copy JSON'}
+                </button>
+              </div>
+              <div className="gen-output-box">
+                <pre className="gen-json"
+                  dangerouslySetInnerHTML={{ __html: highlight(jsonOutput) }} />
+              </div>
             </div>
+
           </div>
         </div>
       </div>
@@ -620,7 +710,7 @@ const CSS = `
 
   .gen-layout {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 32px;
     align-items: start;
   }
@@ -983,15 +1073,26 @@ const CSS = `
   }
   .gen-reset:hover { color: var(--heading); border-color: rgba(255,255,255,0.2); }
 
-  /* ── Output column ── */
-  .gen-output-col {
+  /* ── Right column wrapper (import + output stacked) ── */
+  .gen-right-col {
     position: sticky;
     top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 0;   /* prevent column from expanding beyond its grid track */
+    width: 100%;
+  }
+
+  /* ── Output column ── */
+  .gen-output-col {
     display: flex;
     flex-direction: column;
     border-radius: 12px;
     border: 1px solid var(--border);
     overflow: hidden;
+    min-width: 0;
+    width: 100%;
   }
 
   .gen-output-header {
@@ -1028,17 +1129,18 @@ const CSS = `
   .gen-output-box {
     background: var(--surface);
     padding: 24px;
-    min-height: 340px;
-    overflow-x: auto;
-    overflow-y: auto;
-    max-height: calc(100vh - 200px);
+    height: 340px;       /* fixed — never grows with content */
+    overflow: auto;
+    min-width: 0;
+    width: 100%;
   }
 
   .gen-json {
     font-family: var(--font-mono);
     font-size: 13px;
     line-height: 1.75;
-    white-space: pre;
+    white-space: pre-wrap;   /* wrap long lines instead of overflowing */
+    word-break: break-all;
     color: var(--text);
   }
 
@@ -1048,12 +1150,46 @@ const CSS = `
   .gen-json .json-bool   { color: var(--json-bool); }
   .gen-json .json-null   { color: var(--json-null); }
 
+  /* ── Import box ── */
+  .gen-import-box {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    width: 100%;
+  }
+  .gen-import-textarea {
+    width: 100%;
+    height: 200px;       /* fixed — never grows */
+    background: var(--surface);
+    border: none;
+    outline: none;
+    resize: none;        /* no resize — size is fixed */
+    padding: 20px 24px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--text);
+    caret-color: var(--accent);
+    display: block;
+    overflow: auto;
+    word-break: break-all;
+    box-sizing: border-box;
+  }
+  .gen-import-textarea::placeholder { color: var(--text-dim); }
+  .gen-import-error {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: #fca5a5;
+    padding: 8px 24px 14px;
+    letter-spacing: 0.04em;
+  }
+
   /* ── Responsive ── */
   @media (max-width: 900px) {
     .gen-root { padding: 32px 20px 60px; }
-    .gen-layout { grid-template-columns: 1fr; }
-    .gen-output-col { position: static; }
-    .gen-output-box { max-height: none; }
+    .gen-layout { grid-template-columns: minmax(0, 1fr); }
+    .gen-right-col { position: static; }
   }
   @media (max-width: 480px) {
     .gen-row { grid-template-columns: 1fr; }

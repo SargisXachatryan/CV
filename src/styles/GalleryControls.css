@@ -1,15 +1,17 @@
 .controls {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  flex-wrap: wrap;
+  /* Do NOT flex-wrap here — search must stay right */
 }
 
 .filters {
   display: flex;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: wrap; /* tags wrap within their column */
+  flex: 1 1 0;    /* take available space, shrink if needed */
+  min-width: 0;
 }
 
 .filter-btn {
@@ -25,6 +27,7 @@
   color: var(--text-dim);
   cursor: pointer;
   transition: all 0.2s;
+  white-space: nowrap;
 }
 .filter-btn:hover {
   color: var(--heading);
@@ -41,6 +44,8 @@
   position: relative;
   display: flex;
   align-items: center;
+  flex-shrink: 0; /* never shrink — always stays at right */
+  align-self: flex-start; /* align to top when filters wrap to multiple lines */
 }
 .search-icon {
   position: absolute;

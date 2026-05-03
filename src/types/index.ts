@@ -3,15 +3,13 @@
 export type Tag =
   | 'React'
   | 'Next.js'
+  | 'HTML/CSS'
   | 'JavaScript'
   | 'TypeScript'
-  | 'HTML/CSS'
   | 'Python'
   | 'C#'
   | 'SQL'
   | 'MongoDB'
-  | 'PostgreSQL'
-  | 'Firebase'
   | 'Unity'
   | 'Blender'
   | 'Davinci Resolve'
@@ -34,6 +32,9 @@ export interface Project {
   title: string
   subtitle: Subtitle
   description: string
+  /** Optional long-form write-up shown in the "About the project" section on the detail page.
+   *  Supports multiple paragraphs separated by double newlines (\n\n). */
+  details?: string
   tags: Tag[]
   year: number
   image: string
@@ -48,6 +49,7 @@ export interface FormState {
   title: string
   subtitle: Subtitle
   description: string
+  details: string
   tags: Tag[]
   year: number
   image: string
@@ -58,8 +60,8 @@ export interface FormState {
 
 export const ALL_TAGS: Tag[] = [
   'React', 'Next.js', 'JavaScript', 'TypeScript', 'HTML/CSS',
-  'Python', 'C#', 'SQL', 'MongoDB', 'PostgreSQL', 'Firebase',
-  'Unity', 'Blender','Davinci Resolve', 'Node.js', 'REST API',
+  'Python', 'C#', 'SQL', 'MongoDB','Unity', 'Blender',
+  'Davinci Resolve', 'Node.js', 'REST API',
 ]
 
 export const ALL_SUBTITLES: Subtitle[] = [
@@ -71,6 +73,7 @@ export const DEFAULT_FORM: FormState = {
   title: '',
   subtitle: 'Web App',
   description: '',
+  details: '',
   tags: [],
   year: new Date().getFullYear(),
   image: '',

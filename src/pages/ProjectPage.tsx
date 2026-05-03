@@ -50,12 +50,17 @@ interface VideoPlayerProps {
   poster: string
   isYouTube: boolean
   autoPlay?: boolean
+  /** Called whenever play/pause state changes so parent can react */
+  onPlayingChange?: (playing: boolean) => void
 }
 
-function VideoPlayer({ src, poster, isYouTube, autoPlay = false }: VideoPlayerProps) {
+function VideoPlayer({ src, poster, isYouTube, autoPlay = false, onPlayingChange }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // For real-time drag on progress bar
+  const isDragging = useRef(false)
+  const progressBarRef = useRef<HTMLDivElement>(null)
 
   const [playing, setPlaying] = useState(false)
   const [volume, setVolume] = useState(1)
@@ -65,15 +70,20 @@ function VideoPlayer({ src, poster, isYouTube, autoPlay = false }: VideoPlayerPr
   const [showControls, setShowControls] = useState(true)
   const [isFullscreen, setIsFullscreen] = useState(false)
 
+  const setPlayingState = useCallback((val: boolean) => {
+    setPlaying(val)
+    onPlayingChange?.(val)
+  }, [onPlayingChange])
+
   // Auto-play when src changes (thumbnail click)
   useEffect(() => {
     const v = videoRef.current
     if (!v || isYouTube) return
     v.load()
     if (autoPlay) {
-      v.play().then(() => setPlaying(true)).catch(() => {})
+      v.play().then(() => setPlayingState(true)).catch(() => {})
     } else {
-      setPlaying(false)
+      setPlayingState(false)
     }
   }, [src, autoPlay, isYouTube])
 
@@ -81,18 +91,30 @@ function VideoPlayer({ src, poster, isYouTube, autoPlay = false }: VideoPlayerPr
     const v = videoRef.current
     if (!v) return
     if (v.paused) {
-      v.play().then(() => setPlaying(true)).catch(() => {})
+      v.play().then(() => setPlayingState(true)).catch(() => {})
     } else {
       v.pause()
-      setPlaying(false)
+      setPlayingState(false)
     }
-  }, [])
+  }, [setPlayingState])
 
   const skip = useCallback((seconds: number) => {
     const v = videoRef.current
     if (!v) return
     v.currentTime = Math.max(0, Math.min(v.duration || 0, v.currentTime + seconds))
   }, [])
+
+  // Expose skip via ref so parent keyboard handler can call it
+  // (we use a custom event instead to keep things clean)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ seconds: number }>).detail
+      skip(detail.seconds)
+    }
+    const el = containerRef.current
+    el?.addEventListener('pp-skip', handler)
+    return () => el?.removeEventListener('pp-skip', handler)
+  }, [skip])
 
   const handleVolumeChange = useCallback((val: number) => {
     const v = videoRef.current
@@ -143,6 +165,35 @@ function VideoPlayer({ src, poster, isYouTube, autoPlay = false }: VideoPlayerPr
     return () => document.removeEventListener('fullscreenchange', onFsChange)
   }, [])
 
+  // ── Real-time progress bar drag ──────────────────────────────────────────────
+
+  const seekToFrac = useCallback((clientX: number) => {
+    const bar = progressBarRef.current
+    const v = videoRef.current
+    if (!bar || !v || !v.duration) return
+    const rect = bar.getBoundingClientRect()
+    const frac = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width))
+    v.currentTime = frac * v.duration
+    setProgress(frac)
+  }, [])
+
+  const handleProgressPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    e.currentTarget.setPointerCapture(e.pointerId)
+    isDragging.current = true
+    seekToFrac(e.clientX)
+  }, [seekToFrac])
+
+  const handleProgressPointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDragging.current) return
+    seekToFrac(e.clientX)
+  }, [seekToFrac])
+
+  const handleProgressPointerUp = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDragging.current) return
+    isDragging.current = false
+    seekToFrac(e.clientX)
+  }, [seekToFrac])
+
   const formatTime = (s: number) => {
     if (!isFinite(s)) return '0:00'
     const m = Math.floor(s / 60)
@@ -184,16 +235,16 @@ function VideoPlayer({ src, poster, isYouTube, autoPlay = false }: VideoPlayerPr
         onClick={togglePlay}
         onTimeUpdate={() => {
           const v = videoRef.current
-          if (!v || !v.duration) return
+          if (!v || !v.duration || isDragging.current) return
           setProgress(v.currentTime / v.duration)
         }}
         onLoadedMetadata={() => {
           const v = videoRef.current
           if (v) setDuration(v.duration)
         }}
-        onEnded={() => setPlaying(false)}
-        onPlay={() => setPlaying(true)}
-        onPause={() => setPlaying(false)}
+        onEnded={() => setPlayingState(false)}
+        onPlay={() => setPlayingState(true)}
+        onPause={() => setPlayingState(false)}
       >
         <source src={src} />
       </video>
@@ -209,18 +260,14 @@ function VideoPlayer({ src, poster, isYouTube, autoPlay = false }: VideoPlayerPr
 
       {/* Controls bar */}
       <div className="pp-video-controls" onClick={(e) => e.stopPropagation()}>
-        {/* Progress bar */}
+        {/* Progress bar — pointer events for real-time drag */}
         <div
+          ref={progressBarRef}
           className="pp-progress-bar"
-          onClick={(e) => {
-            const rect = e.currentTarget.getBoundingClientRect()
-            const frac = (e.clientX - rect.left) / rect.width
-            const v = videoRef.current
-            if (v && v.duration) {
-              v.currentTime = frac * v.duration
-              setProgress(frac)
-            }
-          }}
+          onPointerDown={handleProgressPointerDown}
+          onPointerMove={handleProgressPointerMove}
+          onPointerUp={handleProgressPointerUp}
+          onPointerCancel={handleProgressPointerUp}
         >
           <div className="pp-progress-fill" style={{ width: `${progress * 100}%` }} />
           <div className="pp-progress-thumb" style={{ left: `${progress * 100}%` }} />
@@ -324,6 +371,8 @@ export default function ProjectPage() {
   const media = project ? buildMedia(project) : []
   const [activeIndex, setActiveIndex] = useState(0)
   const [autoPlayVideo, setAutoPlayVideo] = useState(false)
+  // Track whether the video is actively playing so we can block hover-switching
+  const [videoPlaying, setVideoPlaying] = useState(false)
   // Which "page" of 5 thumbnails we're on
   const [stripPage, setStripPage] = useState(0)
 
@@ -337,29 +386,63 @@ export default function ProjectPage() {
     setStripPage(page)
   }, [activeIndex])
 
+  // When we leave the video item, reset videoPlaying
+  useEffect(() => {
+    const active = media[activeIndex]
+    if (active?.kind !== 'video') {
+      setVideoPlaying(false)
+    }
+  }, [activeIndex])
+
   // Keyboard navigation
+  // Left/Right: when video is active → skip ±5s; otherwise navigate items
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft')  { setActiveIndex((i) => Math.max(0, i - 1)); setAutoPlayVideo(false) }
-      if (e.key === 'ArrowRight') { setActiveIndex((i) => Math.min(media.length - 1, i + 1)); setAutoPlayVideo(false) }
-      if (e.key === 'Escape')     navigate('/portfolio')
+      // Don't hijack if user is typing in an input
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+
+      const active = media[activeIndex]
+      const isVideoActive = active?.kind === 'video'
+
+      if (e.key === 'ArrowLeft') {
+        if (isVideoActive) {
+          // Skip back 5s inside video
+          const player = document.querySelector('.pp-video-player') as HTMLElement | null
+          player?.dispatchEvent(new CustomEvent('pp-skip', { detail: { seconds: -5 } }))
+        } else {
+          setActiveIndex((i) => Math.max(0, i - 1))
+          setAutoPlayVideo(false)
+        }
+      }
+      if (e.key === 'ArrowRight') {
+        if (isVideoActive) {
+          // Skip forward 5s inside video
+          const player = document.querySelector('.pp-video-player') as HTMLElement | null
+          player?.dispatchEvent(new CustomEvent('pp-skip', { detail: { seconds: 5 } }))
+        } else {
+          setActiveIndex((i) => Math.min(media.length - 1, i + 1))
+          setAutoPlayVideo(false)
+        }
+      }
+      if (e.key === 'Escape') navigate('/CV/portfolio')
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [media.length, navigate])
+  }, [media, activeIndex, navigate])
 
   // Scroll to top on project change
   useEffect(() => {
     window.scrollTo(0, 0)
     setActiveIndex(0)
     setAutoPlayVideo(false)
+    setVideoPlaying(false)
   }, [id])
 
   if (!project) {
     return (
       <main className="pp-not-found">
         <p>Project not found.</p>
-        <Link to="/portfolio">← Back to work</Link>
+        <Link to="/CV/portfolio">← Back to work</Link>
       </main>
     )
   }
@@ -371,16 +454,24 @@ export default function ProjectPage() {
     const isVideo = item.kind === 'video'
     setActiveIndex(globalIdx)
     setAutoPlayVideo(isVideo)
+    if (!isVideo) setVideoPlaying(false)
   }
 
   const handleThumbHover = (globalIdx: number) => {
-    // Only switch on hover for images; video stays until clicked
+    // If video is currently playing, require a click — don't switch on hover
+    if (videoPlaying) return
+    // Only switch on hover for images
     const item = media[globalIdx]
     if (item.kind === 'image') {
       setActiveIndex(globalIdx)
       setAutoPlayVideo(false)
     }
   }
+
+  // Parse details paragraphs
+  const detailsParagraphs = project.details
+    ? project.details.split('\n\n').filter(Boolean)
+    : null
 
   return (
     <main className="pp-root">
@@ -412,6 +503,7 @@ export default function ProjectPage() {
                   poster={active.thumb}
                   isYouTube={active.isYouTube}
                   autoPlay={autoPlayVideo}
+                  onPlayingChange={setVideoPlaying}
                 />
               ) : (
                 <img
@@ -537,11 +629,17 @@ export default function ProjectPage() {
           </aside>
         </div>
 
-        {/* ── Description — full text, paragraphs ── */}
-        <section className="pp-desc-section">
-          <div className="pp-desc-body">
-          </div>
-        </section>
+        {/* ── Details — full write-up ── */}
+        {detailsParagraphs && detailsParagraphs.length > 0 && (
+          <section className="pp-desc-section">
+            <h2 className="pp-desc-heading">About the project</h2>
+            <div className="pp-desc-body">
+              {detailsParagraphs.map((para, i) => (
+                <p key={i}>{para}</p>
+              ))}
+            </div>
+          </section>
+        )}
 
       </div>
     </main>

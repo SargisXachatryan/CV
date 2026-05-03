@@ -15,6 +15,7 @@
   z-index: 0;
   pointer-events: none;
 }
+
 .pp-backdrop-img {
   width: 100%;
   height: 100%;
@@ -22,14 +23,15 @@
   filter: blur(28px) saturate(0.6);
   transform: scale(1.08);
 }
+
 .pp-backdrop-overlay {
   position: absolute;
   inset: 0;
   background:
     linear-gradient(to bottom,
-      rgba(14,13,11,0.82) 0%,
-      rgba(14,13,11,0.96) 40%,
-      rgba(14,13,11,1)    100%);
+      rgba(14, 13, 11, 0.82) 0%,
+      rgba(14, 13, 11, 0.96) 40%,
+      rgba(14, 13, 11, 1) 100%);
 }
 
 /* ── Content ── */
@@ -55,14 +57,25 @@
   margin-bottom: 32px;
   transition: color 0.2s;
 }
-.pp-back:hover { color: var(--heading); }
-.pp-back-arrow { font-size: 14px; transition: transform 0.2s; }
-.pp-back:hover .pp-back-arrow { transform: translateX(-3px); }
+
+.pp-back:hover {
+  color: var(--heading);
+}
+
+.pp-back-arrow {
+  font-size: 14px;
+  transition: transform 0.2s;
+}
+
+.pp-back:hover .pp-back-arrow {
+  transform: translateX(-3px);
+}
 
 /* ── Top layout ── */
 .pp-top {
   display: grid;
-  grid-template-columns: 1fr 320px;
+  /* FIX: sidebar is wider — 400px instead of 320px */
+  grid-template-columns: 1fr 400px;
   gap: 28px;
   align-items: start;
   margin-bottom: 52px;
@@ -94,6 +107,7 @@
   display: block;
   animation: ppFadeIn 0.3s ease;
 }
+
 .pp-main-video {
   width: 100%;
   height: 100%;
@@ -102,8 +116,15 @@
 }
 
 @keyframes ppFadeIn {
-  from { opacity: 0; transform: scale(1.02); }
-  to   { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(1.02);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* Arrow nav (images) */
@@ -119,7 +140,7 @@
   justify-content: center;
   font-size: 28px;
   line-height: 1;
-  background: rgba(14,13,11,0.7);
+  background: rgba(14, 13, 11, 0.7);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--border);
@@ -129,11 +150,28 @@
   transition: background 0.2s, opacity 0.2s;
   opacity: 0;
 }
-.pp-main-display:hover .pp-nav { opacity: 1; }
-.pp-nav:disabled { opacity: 0 !important; pointer-events: none; }
-.pp-nav:hover { background: rgba(212,168,67,0.15); border-color: var(--accent-border); }
-.pp-nav-prev { left: 12px; }
-.pp-nav-next { right: 12px; }
+
+.pp-main-display:hover .pp-nav {
+  opacity: 1;
+}
+
+.pp-nav:disabled {
+  opacity: 0 !important;
+  pointer-events: none;
+}
+
+.pp-nav:hover {
+  background: rgba(212, 168, 67, 0.15);
+  border-color: var(--accent-border);
+}
+
+.pp-nav-prev {
+  left: 12px;
+}
+
+.pp-nav-next {
+  right: 12px;
+}
 
 /* ══════════════════════════════════════════════════════════
    CUSTOM VIDEO PLAYER
@@ -166,16 +204,19 @@
   transition: background 0.2s;
   z-index: 2;
 }
+
 .pp-video-play-overlay:hover {
   background: rgba(0, 0, 0, 0.45);
 }
+
 .pp-play-big-icon {
   width: 72px;
   height: 72px;
-  color: rgba(255,255,255,0.9);
-  filter: drop-shadow(0 2px 12px rgba(0,0,0,0.7));
+  color: rgba(255, 255, 255, 0.9);
+  filter: drop-shadow(0 2px 12px rgba(0, 0, 0, 0.7));
   transition: transform 0.15s, color 0.15s;
 }
+
 .pp-video-play-overlay:hover .pp-play-big-icon {
   transform: scale(1.08);
   color: #fff;
@@ -189,7 +230,7 @@
   right: 0;
   z-index: 3;
   padding: 0 12px 10px;
-  background: linear-gradient(to top, rgba(0,0,0,0.82) 0%, transparent 100%);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.82) 0%, transparent 100%);
   opacity: 0;
   transform: translateY(6px);
   transition: opacity 0.22s, transform 0.22s;
@@ -204,40 +245,63 @@
   pointer-events: all;
 }
 
-/* Progress bar */
+/* ── Progress bar — FIX: thicker hit area + real-time drag ── */
 .pp-progress-bar {
   position: relative;
-  height: 4px;
-  background: rgba(255,255,255,0.2);
-  border-radius: 2px;
-  margin-bottom: 8px;
+  /* Large invisible padding area makes it easy to grab */
+  padding: 8px 0;
+  margin: 0 0 4px;
   cursor: pointer;
+  /* The visible track is a pseudo-element so we keep the click area large */
+}
+
+/* The actual visible track */
+.pp-progress-bar::before {
+  content: '';
+  display: block;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
   transition: height 0.15s;
 }
-.pp-progress-bar:hover {
-  height: 6px;
+
+.pp-progress-bar:hover::before,
+.pp-progress-bar:active::before {
+  height: 7px;
 }
+
 .pp-progress-fill {
   position: absolute;
   left: 0;
-  top: 0;
-  height: 100%;
+  /* vertically centred inside the padding zone (8px top padding + track height/2) */
+  top: 50%;
+  transform: translateY(-50%);
+  height: 5px;
   background: var(--accent, #d4a843);
-  border-radius: 2px;
+  border-radius: 3px;
   pointer-events: none;
+  transition: height 0.15s;
 }
+
+.pp-progress-bar:hover .pp-progress-fill,
+.pp-progress-bar:active .pp-progress-fill {
+  height: 7px;
+}
+
 .pp-progress-thumb {
   position: absolute;
   top: 50%;
   transform: translate(-50%, -50%) scale(0);
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   background: var(--accent, #d4a843);
   pointer-events: none;
   transition: transform 0.15s;
 }
-.pp-progress-bar:hover .pp-progress-thumb {
+
+.pp-progress-bar:hover .pp-progress-thumb,
+.pp-progress-bar:active .pp-progress-thumb {
   transform: translate(-50%, -50%) scale(1);
 }
 
@@ -267,24 +331,28 @@
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  color: rgba(255,255,255,0.85);
+  color: rgba(255, 255, 255, 0.85);
   padding: 0;
   transition: color 0.15s, background 0.15s;
   flex-shrink: 0;
 }
+
 .pp-ctrl-btn svg {
   width: 20px;
   height: 20px;
   display: block;
 }
+
 .pp-ctrl-btn:hover {
   color: #fff;
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
 }
+
 .pp-ctrl-playpause {
   width: 38px;
   height: 38px;
 }
+
 .pp-ctrl-playpause svg {
   width: 22px;
   height: 22px;
@@ -294,7 +362,7 @@
 .pp-time {
   font-family: var(--font-mono, monospace);
   font-size: 11px;
-  color: rgba(255,255,255,0.75);
+  color: rgba(255, 255, 255, 0.75);
   white-space: nowrap;
   letter-spacing: 0.04em;
   padding: 0 4px;
@@ -307,15 +375,17 @@
   appearance: none;
   width: 72px;
   height: 4px;
-  background: rgba(255,255,255,0.2);
+  background: rgba(255, 255, 255, 0.2);
   border-radius: 2px;
   outline: none;
   cursor: pointer;
   transition: height 0.15s;
 }
+
 .pp-volume-slider:hover {
   height: 5px;
 }
+
 .pp-volume-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 12px;
@@ -326,9 +396,11 @@
   margin-top: -4px;
   transition: transform 0.15s;
 }
+
 .pp-volume-slider:hover::-webkit-slider-thumb {
   transform: scale(1.2);
 }
+
 .pp-volume-slider::-moz-range-thumb {
   width: 12px;
   height: 12px;
@@ -337,7 +409,7 @@
   border: none;
   cursor: pointer;
 }
-/* Fill the track up to thumb */
+
 .pp-volume-slider::-webkit-slider-runnable-track {
   height: 4px;
   border-radius: 2px;
@@ -345,6 +417,7 @@
 
 /* ═══════════════════════════════════════════════════════════════
    Thumbnail strip
+   FIX: fixed per-thumb width instead of flex:1 stretch
    ═══════════════════════════════════════════════════════════════ */
 
 .pp-strip-wrap {
@@ -362,34 +435,44 @@
   justify-content: center;
   font-size: 22px;
   line-height: 1;
-  background: rgba(255,255,255,0.04);
+  background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--border);
   border-radius: 4px;
   color: var(--text-dim);
   cursor: pointer;
   transition: background 0.2s, color 0.2s, border-color 0.2s;
 }
+
 .pp-strip-page-btn:hover:not(:disabled) {
-  background: rgba(212,168,67,0.1);
+  background: rgba(212, 168, 67, 0.1);
   border-color: var(--accent-border);
   color: var(--accent);
 }
+
 .pp-strip-page-btn:disabled {
   opacity: 0.25;
   pointer-events: none;
 }
 
+/* Strip is a flex row that starts from the left — items don't stretch */
 .pp-strip {
   display: flex;
   gap: 8px;
+  /* Do NOT use flex:1 — items stay fixed width and left-align naturally */
   flex: 1;
+  /* take available space so the row fills the gap between buttons */
   min-width: 0;
+  overflow: hidden;
+  /* items stay left-aligned and never grow to fill remaining space */
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
 .pp-strip-thumb {
   position: relative;
-  flex: 1;
-  min-width: 0;
+  /* FIX: fixed size — never stretches to fill remaining space */
+  flex: 0 0 112px;
+  width: 112px;
   height: 63px;
   border-radius: 4px;
   overflow: hidden;
@@ -399,17 +482,22 @@
   padding: 0;
   transition: border-color 0.2s, transform 0.2s;
 }
+
 .pp-strip-thumb:hover {
-  border-color: rgba(255,255,255,0.25);
+  border-color: rgba(255, 255, 255, 0.25);
   transform: translateY(-2px);
 }
-.pp-strip-thumb.active { border-color: var(--accent); }
+
+.pp-strip-thumb.active {
+  border-color: var(--accent);
+}
 
 /* Video thumbnails dim slightly to signal interactivity */
 .pp-strip-thumb.is-video .pp-strip-img {
   filter: brightness(0.75);
   transition: filter 0.2s;
 }
+
 .pp-strip-thumb.is-video:hover .pp-strip-img,
 .pp-strip-thumb.is-video.active .pp-strip-img {
   filter: brightness(0.6);
@@ -431,25 +519,27 @@
   justify-content: center;
   pointer-events: none;
 }
+
 .pp-strip-play-icon {
   width: 32px;
   height: 32px;
-  filter: drop-shadow(0 1px 4px rgba(0,0,0,0.6));
+  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.6));
   transition: transform 0.2s;
 }
+
 .pp-strip-thumb:hover .pp-strip-play-icon {
   transform: scale(1.12);
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   Sidebar
+   Sidebar — FIX: wider
    ═══════════════════════════════════════════════════════════════ */
 
 .pp-sidebar {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  background: rgba(22,21,16,0.75);
+  background: rgba(22, 21, 16, 0.75);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border);
@@ -495,6 +585,7 @@
   flex-wrap: wrap;
   gap: 6px;
 }
+
 .pp-tag {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -524,21 +615,29 @@
   text-decoration: none;
   padding: 11px 24px;
   border-radius: 99px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   transition: background 0.2s, border-color 0.2s, color 0.2s;
   align-self: flex-start;
   margin-top: 4px;
 }
+
 .pp-cta:hover {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--bg);
 }
-.pp-cta-arrow { display: inline-block; transition: transform 0.2s; }
-.pp-cta:hover .pp-cta-arrow { transform: translateX(4px); }
+
+.pp-cta-arrow {
+  display: inline-block;
+  transition: transform 0.2s;
+}
+
+.pp-cta:hover .pp-cta-arrow {
+  transform: translateX(4px);
+}
 
 .pp-media-count {
   font-family: var(--font-mono);
@@ -549,18 +648,28 @@
   margin-top: auto;
 }
 
-/* ── Description ── */
+/* ── Details / full description ── */
 .pp-desc-section {
   border-top: 1px solid var(--border);
-  padding-top: 40px;
+  padding-top: 48px;
   max-width: 760px;
+}
+
+.pp-desc-heading {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 3vw, 40px);
+  letter-spacing: 0.03em;
+  color: var(--heading);
+  margin-bottom: 24px;
+  line-height: 1;
 }
 
 .pp-desc-body {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
 }
+
 .pp-desc-body p {
   font-size: 15px;
   line-height: 1.8;
@@ -579,18 +688,43 @@
   font-size: 13px;
   color: var(--text-dim);
 }
-.pp-not-found a { color: var(--accent); text-decoration: none; }
+
+.pp-not-found a {
+  color: var(--accent);
+  text-decoration: none;
+}
 
 /* ── Responsive ── */
 @media (max-width: 900px) {
-  .pp-content { padding: 24px 24px 60px; }
-  .pp-top { grid-template-columns: 1fr; }
-  .pp-sidebar { order: -1; }
+  .pp-content {
+    padding: 24px 24px 60px;
+  }
+
+  .pp-top {
+    grid-template-columns: 1fr;
+  }
+
+  .pp-sidebar {
+    order: -1;
+  }
 }
 
 @media (max-width: 640px) {
-  .pp-content { padding: 20px 16px 48px; }
-  .pp-strip-thumb { height: 50px; }
-  .pp-strip-page-btn { height: 50px; }
-  .pp-volume-slider { width: 52px; }
+  .pp-content {
+    padding: 20px 16px 48px;
+  }
+
+  .pp-strip-thumb {
+    flex: 0 0 88px;
+    width: 88px;
+    height: 50px;
+  }
+
+  .pp-strip-page-btn {
+    height: 50px;
+  }
+
+  .pp-volume-slider {
+    width: 52px;
+  }
 }

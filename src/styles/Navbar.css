@@ -22,6 +22,7 @@
   transition: color 0.2s;
 }
 .navbar-logo:hover { color: var(--accent); }
+/* Logo is NOT a nav link, so no active state needed */
 
 .navbar-links {
   display: flex;
@@ -39,18 +40,23 @@
 .navbar-links a:hover,
 .navbar-links a.active { color: var(--heading); }
 
+/* Contact — now a <button> styled identically to old <a> */
 .navbar-cta {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
   padding: 7px 20px;
   border-radius: 99px;
   border: 1px solid var(--accent-border);
   background: var(--accent-dim);
   backdrop-filter: blur(8px);
-  color: var(--accent) !important;
-  transition: background 0.2s, color 0.2s !important;
+  color: var(--accent);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
 }
 .navbar-cta:hover {
-  background: var(--accent) !important;
-  color: var(--bg) !important;
+  background: var(--accent);
+  color: var(--bg);
 }
 
 /* Burger */
@@ -93,5 +99,14 @@
   .navbar-links.open { display: flex; }
   .navbar-links a { padding: 12px 0; width: 100%; border-bottom: 1px solid var(--border); }
   .navbar-links a:last-child { border-bottom: none; }
-  .navbar-cta { padding: 12px 0 !important; border: none !important; background: none !important; }
+  .navbar-cta {
+    padding: 12px 0 !important;
+    border: none !important;
+    background: none !important;
+    color: var(--accent) !important;
+    width: 100%;
+    text-align: left;
+    border-bottom: 1px solid var(--border) !important;
+    border-radius: 0 !important;
+  }
 }
