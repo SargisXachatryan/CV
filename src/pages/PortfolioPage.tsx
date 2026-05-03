@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo } from 'react'
 import projectsData from '../data/projects.json'
 import type { Project, Tag } from '../types/index'
 import FeaturedPanel from '../components/FeaturedPanel'
