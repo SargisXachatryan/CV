@@ -65,11 +65,16 @@ export default function PortfolioPage() {
           </div>
 
           <div className="contact-cards">
-            <a href="mailto:Sargis.a.xachatryan@gmail.com" className="contact-card">
+            <a
+              href="https://mail.google.com/mail/?view=cm&fs=1&to=Sargis.a.xachatryan@gmail.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="contact-card"
+            >
               <div className="contact-card-icon">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="2" y="4" width="20" height="16" rx="3" stroke="currentColor" strokeWidth="1.5"/>
-                  <path d="M2 8l10 6 10-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  <rect x="2" y="4" width="20" height="16" rx="3" stroke="currentColor" strokeWidth="1.5" />
+                  <path d="M2 8l10 6 10-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                 </svg>
               </div>
               <div className="contact-card-text">
@@ -82,10 +87,10 @@ export default function PortfolioPage() {
             <a href="https://www.linkedin.com/in/sargis-xachatryan-009b102a5/" target="_blank" rel="noopener noreferrer" className="contact-card">
               <div className="contact-card-icon">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="2" y="2" width="20" height="20" rx="4" stroke="currentColor" strokeWidth="1.5"/>
-                  <path d="M7 10v7M7 7v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                  <path d="M11 17v-4c0-1.5 1-2.5 2.5-2.5S16 11.5 16 13v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                  <path d="M11 10v7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  <rect x="2" y="2" width="20" height="20" rx="4" stroke="currentColor" strokeWidth="1.5" />
+                  <path d="M7 10v7M7 7v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                  <path d="M11 17v-4c0-1.5 1-2.5 2.5-2.5S16 11.5 16 13v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                  <path d="M11 10v7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                 </svg>
               </div>
               <div className="contact-card-text">
