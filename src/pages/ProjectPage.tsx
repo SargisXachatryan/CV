@@ -111,10 +111,15 @@ function VideoPlayer({ src, poster, isYouTube, autoPlay = false, onPlayingChange
       const detail = (e as CustomEvent<{ seconds: number }>).detail
       skip(detail.seconds)
     }
+    const toggleHandler = () => togglePlay()
     const el = containerRef.current
     el?.addEventListener('pp-skip', handler)
-    return () => el?.removeEventListener('pp-skip', handler)
-  }, [skip])
+    el?.addEventListener('pp-toggle-play', toggleHandler)
+    return () => {
+      el?.removeEventListener('pp-skip', handler)
+      el?.removeEventListener('pp-toggle-play', toggleHandler)
+    }
+  }, [skip, togglePlay])
 
   const handleVolumeChange = useCallback((val: number) => {
     const v = videoRef.current
@@ -376,6 +381,51 @@ export default function ProjectPage() {
   // Which "page" of 5 thumbnails we're on
   const [stripPage, setStripPage] = useState(0)
 
+  // Lightbox
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null)
+  const [lightboxScale, setLightboxScale] = useState(1)
+  const [lightboxPan, setLightboxPan] = useState({ x: 0, y: 0 })
+  const ZOOM_MIN = 0.5
+  const ZOOM_MAX = 4
+  const dragState = useRef<{ dragging: boolean; startX: number; startY: number; panX: number; panY: number; moved: boolean }>({
+    dragging: false, startX: 0, startY: 0, panX: 0, panY: 0, moved: false
+  })
+  const [isDragging, setIsDragging] = useState(false)
+
+  const openLightbox = (src: string) => {
+    setLightboxSrc(src)
+    setLightboxScale(1)
+    setLightboxPan({ x: 0, y: 0 })
+  }
+
+  const closeLightbox = () => {
+    setLightboxSrc(null)
+    setLightboxScale(1)
+    setLightboxPan({ x: 0, y: 0 })
+  }
+
+  // Close lightbox on Escape; scroll wheel to zoom
+  useEffect(() => {
+    if (!lightboxSrc) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeLightbox()
+    }
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault()
+      setLightboxScale((s) => {
+        const next = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, s - e.deltaY * 0.002))
+        if (next <= 1) setLightboxPan({ x: 0, y: 0 })
+        return next
+      })
+    }
+    window.addEventListener('keydown', onKey)
+    window.addEventListener('wheel', onWheel, { passive: false })
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      window.removeEventListener('wheel', onWheel)
+    }
+  }, [lightboxSrc])
+
   const totalStripPages = Math.ceil(media.length / STRIP_PAGE_SIZE)
   const stripStart = stripPage * STRIP_PAGE_SIZE
   const visibleMedia = media.slice(stripStart, stripStart + STRIP_PAGE_SIZE)
@@ -423,6 +473,11 @@ export default function ProjectPage() {
           setActiveIndex((i) => Math.min(media.length - 1, i + 1))
           setAutoPlayVideo(false)
         }
+      }
+      if ((e.key === ' ' || e.key === 'Spacebar') && isVideoActive) {
+        e.preventDefault()
+        const player = document.querySelector('.pp-video-player') as HTMLElement | null
+        player?.dispatchEvent(new CustomEvent('pp-toggle-play'))
       }
       if (e.key === 'Escape') navigate('/CV/portfolio')
     }
@@ -510,7 +565,8 @@ export default function ProjectPage() {
                   key={active.src}
                   src={active.src}
                   alt={project.title}
-                  className="pp-main-image"
+                  className="pp-main-image pp-main-image--clickable"
+                  onClick={() => openLightbox(active.src)}
                 />
               )}
 
@@ -646,6 +702,68 @@ export default function ProjectPage() {
         )}
 
       </div>
+
+      {/* ── Lightbox ── */}
+      {lightboxSrc && (
+        <div
+          className="pp-lightbox-backdrop"
+          onClick={(e) => {
+            // Only close if the click wasn't a drag
+            if (!dragState.current.moved) closeLightbox()
+          }}
+        >
+          <img
+            src={lightboxSrc}
+            alt=""
+            className={`pp-lightbox-img ${lightboxScale > 1 ? 'pp-lightbox-img--zoomed' : ''}`}
+            style={{
+              transform: `translate(${lightboxPan.x}px, ${lightboxPan.y}px) scale(${lightboxScale})`,
+              transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+              cursor: isDragging ? 'grabbing' : lightboxScale > 1 ? 'grab' : 'zoom-in',
+              willChange: 'transform',
+            }}
+            onPointerDown={(e) => {
+              e.stopPropagation()
+              e.currentTarget.setPointerCapture(e.pointerId)
+              dragState.current = {
+                dragging: true,
+                startX: e.clientX - lightboxPan.x,
+                startY: e.clientY - lightboxPan.y,
+                panX: lightboxPan.x,
+                panY: lightboxPan.y,
+                moved: false,
+              }
+              setIsDragging(true)
+            }}
+            onPointerMove={(e) => {
+              if (!dragState.current.dragging) return
+              const dx = e.clientX - dragState.current.startX
+              const dy = e.clientY - dragState.current.startY
+              if (Math.abs(dx - dragState.current.panX) > 3 || Math.abs(dy - dragState.current.panY) > 3) {
+                dragState.current.moved = true
+              }
+              setLightboxPan({ x: dx, y: dy })
+            }}
+            onPointerUp={(e) => {
+              e.stopPropagation()
+              const wasMoved = dragState.current.moved
+              dragState.current.dragging = false
+              setIsDragging(false)
+              if (!wasMoved) {
+                const next = lightboxScale > 1 ? 1 : 2
+                setLightboxScale(next)
+                if (next === 1) setLightboxPan({ x: 0, y: 0 })
+              }
+              setTimeout(() => { dragState.current.moved = false }, 0)
+            }}
+          />
+          <button
+            className="pp-lightbox-close"
+            onClick={(e) => { e.stopPropagation(); closeLightbox() }}
+            aria-label="Close"
+          >✕</button>
+        </div>
+      )}
     </main>
   )
 }
