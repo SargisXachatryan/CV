@@ -707,7 +707,7 @@ export default function ProjectPage() {
       {lightboxSrc && (
         <div
           className="pp-lightbox-backdrop"
-          onClick={(e) => {
+          onClick={() => {
             // Only close if the click wasn't a drag
             if (!dragState.current.moved) closeLightbox()
           }}
